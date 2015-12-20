@@ -35,7 +35,6 @@ local function OnQuestAdded(eventCode, journalIndex, questName, objectiveName)
 			["x"]        = normalizedX,
 			["y"]        = normalizedY,
 			["giver"]    = questGiverName,
-			["preQuest"] = preQuest,
 			["otherInfo"] = {
 					["time"]      = GetTimeStamp(),
 					["api"]       = GetAPIVersion(),
@@ -43,6 +42,14 @@ local function OnQuestAdded(eventCode, journalIndex, questName, objectiveName)
 				},
 		}
 	table.insert(QM_Scout.zones[zone], quest)
+	-- Save precedent quest info in separate table
+	if preQuest then
+		if QM_Scout.preQuests == nil then QM_Scout.preQuests = {} end
+		for _,id in ipairs(ids) do
+			if QM_Scout.preQuests[id] == nil then QM_Scout.preQuests[id] = {} end
+			QM_Scout.preQuests[id][preQuest] = #ids
+		end
+	end
 end
 
 -- Event handler function for EVENT_CHATTER_END
@@ -82,7 +89,6 @@ local function OnQuestRemoved(eventCode, isCompleted, journalIndex, questName, z
 	if not isCompleted then return end
 	preQuest = questID
 	if not QM_Scout.rewards then QM_Scout.rewards = {} end
-	-- ZO_ShallowTableCopy(reward, QM_Scout.rewards[questID])
 	QM_Scout.rewards[questID] = reward
 	reward = nil
 end
