@@ -9,9 +9,10 @@ https://github.com/CaptainBlagbird
 -- Addon info
 local AddonName = "QuestMapScout"
 -- Local variables
-local questGiverName = nil
-local preQuest = nil
-local reward = nil
+local questGiverName
+local preQuest
+local reward
+local lastZone
 -- Init saved variables table
 if QM_Scout == nil then QM_Scout = {startTime=GetTimeStamp()} end
 
@@ -19,6 +20,16 @@ if QM_Scout == nil then QM_Scout = {startTime=GetTimeStamp()} end
 -- Get zone and subzone in a single string (e.g. "stonefalls/balfoyen_base")
 local function GetZoneAndSubzone()
 	return select(3,(GetMapTileTexture()):lower():find("maps/([%w%-]+/[%w%-]+_[%w%-]+)"))
+end
+
+-- Check if zone is base zone
+local function IsBaseZone(zoneAndSubzone)
+	return (zoneAndSubzone:match("(.*)/") == zoneAndSubzone:match("/(.*)_base"))
+end
+
+-- Check if both subzones are in the same zone
+local function IsSameZone(zoneAndSubzone1, zoneAndSubzone2)
+	return (zoneAndSubzone1:match("(.*)/") == zoneAndSubzone2:match("(.*)/"))
 end
 
 -- Event handler function for EVENT_QUEST_ADDED
@@ -98,3 +109,30 @@ local function OnQuestRemoved(eventCode, isCompleted, journalIndex, questName, z
 	QM_Scout.repeatTypes[questID] = GetJournalQuestRepeatType(journalIndex)
 end
 EVENT_MANAGER:RegisterForEvent(AddonName, EVENT_QUEST_REMOVED, OnQuestRemoved)
+
+-- Event handler function for EVENT_PLAYER_DEACTIVATED
+local function OnPlayerDeactivated(eventCode)
+	lastZone = GetZoneAndSubzone()
+end
+EVENT_MANAGER:RegisterForEvent(AddonName, EVENT_PLAYER_DEACTIVATED, OnPlayerDeactivated)
+
+-- Event handler function for EVENT_PLAYER_ACTIVATED
+local function OnPlayerActivated(eventCode)
+	local zone = GetZoneAndSubzone()
+	-- Check if leaving subzone (entering base zone)
+	if lastZone and zone ~= lastZone and IsBaseZone(zone) and IsSameZone(zone, lastZone) then
+		if QM_Scout.subZones == nil then QM_Scout.subZones = {} end
+		if QM_Scout.subZones[zone] == nil then QM_Scout.subZones[zone] = {} end
+		if QM_Scout.subZones[zone][lastZone] == nil then
+			-- Save entrance position
+			local x, y = GetMapPlayerPosition("player")
+			QM_Scout.subZones[zone][lastZone] = {
+					["zoom_factor"] = 0,
+					["y"] = x,
+					["x"] = y,
+				}
+		end
+	end
+	lastZone = zone
+end
+EVENT_MANAGER:RegisterForEvent(AddonName, EVENT_PLAYER_ACTIVATED, OnPlayerActivated)
