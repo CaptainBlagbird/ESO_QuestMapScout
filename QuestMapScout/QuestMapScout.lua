@@ -87,9 +87,14 @@ EVENT_MANAGER:RegisterForEvent(AddonName, EVENT_QUEST_COMPLETE_DIALOG, OnQuestCo
 -- Event handler function for EVENT_QUEST_REMOVED
 local function OnQuestRemoved(eventCode, isCompleted, journalIndex, questName, zoneIndex, poiIndex, questID)
 	if not isCompleted then return end
+	-- Remember precedent quest id
 	preQuest = questID
+	-- Save quest reward to seperate table
 	if not QM_Scout.rewards then QM_Scout.rewards = {} end
 	QM_Scout.rewards[questID] = reward
 	reward = nil
+	-- Save repeat quest type to seperate table
+	if not QM_Scout.repeatTypes then QM_Scout.repeatTypes = {} end
+	QM_Scout.repeatTypes[questID] = GetJournalQuestRepeatType(journalIndex)
 end
 EVENT_MANAGER:RegisterForEvent(AddonName, EVENT_QUEST_REMOVED, OnQuestRemoved)
