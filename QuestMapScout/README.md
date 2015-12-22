@@ -12,5 +12,7 @@ After a while (e.g. after completing an alliance/dlc), please send me the data:
 
 5. Delete the file from the SavedVariables folder (while the game is still closed or the add-on disabled)
 
+To see what data exactly the add-on collects, see the file "example_log.lua" where I added comments for each item.
+
 ____
 [CaptainBlagbird](http://www.esoui.com/forums/member.php?userid=13972)
