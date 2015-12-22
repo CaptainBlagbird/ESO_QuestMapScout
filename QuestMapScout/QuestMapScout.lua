@@ -35,9 +35,9 @@ end
 -- Event handler function for EVENT_QUEST_ADDED
 local function OnQuestAdded(eventCode, journalIndex, questName, objectiveName)
 	-- Add quest to saved variables table in correct zone element
-	if QM_Scout.zones == nil then QM_Scout.zones = {} end
+	if QM_Scout.quests == nil then QM_Scout.quests = {} end
 	local zone = GetZoneAndSubzone()
-	if QM_Scout.zones[zone] == nil then QM_Scout.zones[zone] = {} end
+	if QM_Scout.quests[zone] == nil then QM_Scout.quests[zone] = {} end
 	local ids = QuestMap:GetQuestIds(questName)
 	local normalizedX, normalizedY = GetMapPlayerPosition("player")
 	local quest = {
@@ -52,13 +52,14 @@ local function OnQuestAdded(eventCode, journalIndex, questName, objectiveName)
 					["lang"]      = GetCVar("language.2")
 				},
 		}
-	table.insert(QM_Scout.zones[zone], quest)
-	-- Save precedent quest info in separate table
+	table.insert(QM_Scout.quests[zone], quest)
+	-- Save prerequisite quest info in separate table
 	if preQuest then
-		if QM_Scout.preQuests == nil then QM_Scout.preQuests = {} end
+		if not QM_Scout.questInfo then QM_Scout.questInfo = {} end	
 		for _,id in ipairs(ids) do
-			if QM_Scout.preQuests[id] == nil then QM_Scout.preQuests[id] = {} end
-			QM_Scout.preQuests[id][preQuest] = #ids
+			if not QM_Scout.questInfo[id] then QM_Scout.questInfo[id] = {} end
+			if not QM_Scout.questInfo[id].preQuest then QM_Scout.questInfo[id].preQuest = {} end
+			QM_Scout.questInfo[id].preQuest[preQuest] = #ids
 		end
 	end
 end
@@ -98,15 +99,14 @@ EVENT_MANAGER:RegisterForEvent(AddonName, EVENT_QUEST_COMPLETE_DIALOG, OnQuestCo
 -- Event handler function for EVENT_QUEST_REMOVED
 local function OnQuestRemoved(eventCode, isCompleted, journalIndex, questName, zoneIndex, poiIndex, questID)
 	if not isCompleted then return end
-	-- Remember precedent quest id
+	-- Remember prerequisite quest id
 	preQuest = questID
-	-- Save quest reward to seperate table
-	if not QM_Scout.rewards then QM_Scout.rewards = {} end
-	QM_Scout.rewards[questID] = reward
+	-- Save quest repeat and reward type
+	if not QM_Scout.questInfo then QM_Scout.questInfo = {} end
+	if not QM_Scout.questInfo[questID] then QM_Scout.questInfo[questID] = {} end
+	QM_Scout.questInfo[questID].repeatType = GetJournalQuestRepeatType(journalIndex)
+	QM_Scout.questInfo[questID].rewardTypes = reward
 	reward = nil
-	-- Save repeat quest type to seperate table
-	if not QM_Scout.repeatTypes then QM_Scout.repeatTypes = {} end
-	QM_Scout.repeatTypes[questID] = GetJournalQuestRepeatType(journalIndex)
 end
 EVENT_MANAGER:RegisterForEvent(AddonName, EVENT_QUEST_REMOVED, OnQuestRemoved)
 
@@ -127,7 +127,6 @@ local function OnPlayerActivated(eventCode)
 			-- Save entrance position
 			local x, y = GetMapPlayerPosition("player")
 			QM_Scout.subZones[zone][lastZone] = {
-					["zoom_factor"] = 0,
 					["y"] = x,
 					["x"] = y,
 				}
