@@ -38,14 +38,13 @@ local function OnQuestAdded(eventCode, journalIndex, questName, objectiveName)
 	if QM_Scout.quests == nil then QM_Scout.quests = {} end
 	local zone = GetZoneAndSubzone()
 	if QM_Scout.quests[zone] == nil then QM_Scout.quests[zone] = {} end
-	local ids = QuestMap:GetQuestIds(questName)
 	local normalizedX, normalizedY = GetMapPlayerPosition("player")
 	local quest = {
-			["ids"]      = ids,
-			["name"]     = questName,
-			["x"]        = normalizedX,
-			["y"]        = normalizedY,
-			["giver"]    = questGiverName,
+			["name"]      = questName,
+			["x"]         = normalizedX,
+			["y"]         = normalizedY,
+			["giver"]     = questGiverName,
+			["preQuest"]  = preQuest,  -- Save it here (instead of in questInfo) because the quest (not preQuest) only has a name and not unique ID
 			["otherInfo"] = {
 					["time"]      = GetTimeStamp(),
 					["api"]       = GetAPIVersion(),
@@ -53,15 +52,6 @@ local function OnQuestAdded(eventCode, journalIndex, questName, objectiveName)
 				},
 		}
 	table.insert(QM_Scout.quests[zone], quest)
-	-- Save prerequisite quest info in separate table
-	if preQuest then
-		if not QM_Scout.questInfo then QM_Scout.questInfo = {} end	
-		for _,id in ipairs(ids) do
-			if not QM_Scout.questInfo[id] then QM_Scout.questInfo[id] = {} end
-			if not QM_Scout.questInfo[id].preQuest then QM_Scout.questInfo[id].preQuest = {} end
-			QM_Scout.questInfo[id].preQuest[preQuest] = #ids
-		end
-	end
 end
 
 -- Event handler function for EVENT_CHATTER_END

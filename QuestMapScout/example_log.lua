@@ -9,12 +9,9 @@ QM_Scout =
             {
                 ["name"] = "False Knights",  -- Quest title
                 ["giver"] = "Sir Graham",  -- Quest giver (e.g. NPC name or name of the object that started the quest like books etc.)
-                ["ids"] =  -- List of possible ids corresponding to the quest title
-                {
-                    [1] = 1687,
-                },
                 ["y"] = 0.3275171518,  -- x coordinate where the quest was accepted
                 ["x"] = 0.2861485779,  -- y coordinate where the quest was accepted
+                ["preQuest"] = 2569,  -- Unique quest ID of the prerequisite quest (if available)
                 ["otherInfo"] = 
                 {
                     ["lang"] = "en",  -- Language of the client (used to find out in what language the name of the quest and quest giver is)
@@ -35,7 +32,7 @@ QM_Scout =
             },
         },
     },
-    ["questInfo"] =  -- Contains a list of completed quests (IDs) infos about them
+    ["questInfo"] =  -- Contains a list of completed quests (IDs) with infos about them
     {
         [1687] = 
         {
@@ -43,10 +40,6 @@ QM_Scout =
             ["rewardTypes"] =  -- List of reward types (http://wiki.esoui.com/Globals#RewardType)
             {
                 [1] = 1,
-            },
-            ["preQuest"] =  -- List of possible prerequisite quests
-            {
-                [2569] = 1,  -- Format: [id] = Number of other possible quests with that preQuest
             },
         },
     },
